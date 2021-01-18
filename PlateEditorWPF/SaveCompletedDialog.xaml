@@ -1,0 +1,110 @@
+﻿<Window x:Class="PlateEditorWPF.SaveCompletedDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PlateEditorWPF"
+        xmlns:conv="clr-namespace:PlateEditorWPF.Converters"
+        mc:Ignorable="d"
+        Title="Save Completed" Height="400" Width="500">
+    <Window.Resources>
+        <conv:NullVisibilityConverter x:Key="nullVisibleConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Column="0" Grid.Row="0">Message</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Path=Message}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="1">Source Dir</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Path=Source}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="2">Save Dir</TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Path=Save}"/>
+                </Grid>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Grid.Row="0">Count</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Path=SavedFiles.Count}"/>
+            </Grid>
+        </Grid>
+
+        <Expander Grid.Row="1" IsExpanded="False">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Path=SavedFiles}" ScrollViewer.CanContentScroll="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="5" Padding="4" BorderThickness="1" BorderBrush="LightBlue">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Padding="0,0,10,0">Plate</TextBlock>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Path=Path}"/>
+                                    <Expander
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="LightSalmon"
+                                    Header="Error"
+                                    Visibility="{Binding Path=Error, Converter={StaticResource nullVisibleConverter}}"
+                                >
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Path=Source}"/>
+                                            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Path=Error.Message}"/>
+                                            <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Path=Error.StackTrace}"/>
+                                        </Grid>
+                                    </Expander>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Expander>
+    </Grid>
+</Window>

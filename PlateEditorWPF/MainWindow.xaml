@@ -1,0 +1,452 @@
+﻿<Window x:Class="PlateEditorWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PlateEditorWPF"
+        xmlns:cnv="clr-namespace:PlateEditorWPF.Converters"
+        mc:Ignorable="d"
+        WindowState="Maximized"
+        Name="root"
+        Title="Plate Editor" Height="450" Width="800">
+    <Window.Resources>
+        <cnv:VisibilityConverter x:Key="VisibleConverter"/>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding Path=SavePlatesCmd}" Key="Return"/>
+        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Left"/>
+        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Right"/>
+    </Window.InputBindings>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="200"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="Auto" MinWidth="200"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" Grid.ColumnSpan="5">
+            <MenuItem Header="Bookmarks">
+                <MenuItem Header="Save" Command="{Binding Path=SaveBookmarkCmd}"/>
+                <MenuItem Header="Open" Command="{Binding Path=OpenBookmarkCmd}"/>
+            </MenuItem>
+        </Menu>
+
+        <Border
+            Grid.Row="1"
+            Grid.Column="0"
+            Style="{StaticResource FilesBorder}"
+        >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Padding="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.ColumnSpan="3">Source Folder</TextBlock>
+                                <TextBox
+                                    Grid.Column="0"
+                                    Grid.Row="1"
+                                    Text="{Binding Path=RootDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                >
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=RootDirExists, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                    <Setter Property="Background" Value="LightGreen"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=RootDirExists, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                                                    <Setter Property="Background" Value="LightSalmon"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                                <Button
+                                    Command="{Binding Path=OpenRootDirCmd}"
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                >
+                                    Open
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1" Padding="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.ColumnSpan="3">Save Folder</TextBlock>
+                                <TextBox
+                                    Grid.Column="0"
+                                    Grid.Row="1"
+                                    Text="{Binding Path=SaveDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                >
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=SaveDirExists, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                    <Setter Property="Background" Value="LightGreen"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=SaveDirExists, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                                                    <Setter Property="Background" Value="LightSalmon"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.ColumnSpan="2">
+                            Switch Plates
+                        </TextBlock>
+                        <Button
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Command="{Binding Path=PrevImageCmd}"
+                            Padding="6,2,6,2"
+                        >
+                            Prev
+                        </Button>
+                        <Button
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            Command="{Binding Path=NextImageCmd}"
+                            Padding="6,2,6,2"
+                        >
+                            Next
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <CheckBox Grid.Row="0" x:Name="ToggleSaveCB" IsChecked="{Binding Path=ToggleSaveAll}">
+                            Save All
+                        </CheckBox>
+                        <TextBlock Grid.Row="1">Plate Paths</TextBlock>
+                        <ListView
+                            x:Name="allPlatesView"
+                            BorderBrush="Blue"
+                            BorderThickness="2"
+                            Margin="2"
+                            Grid.Row="2"
+                            ItemsSource="{Binding Path=AllPlates, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding Path=CurrentPlate, UpdateSourceTrigger=PropertyChanged}"
+                        >
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image
+                                            Source="\Images\SaveIconSmall.png"
+                                            Visibility="{
+                                                Binding Path=WillSavePlate,
+                                                UpdateSourceTrigger=PropertyChanged,
+                                                Converter={StaticResource VisibleConverter}
+                                            }"
+                                            Width="20"
+                                            Height="20"
+                                        />
+                                        <TextBlock Text="{Binding Path=FileName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <GridSplitter
+            Grid.Row="1"
+            Grid.Column="1"
+            ResizeDirection="Columns"
+        />
+
+        <Border
+            Grid.Row="1" 
+            Grid.Column="2"
+            Style="{StaticResource PlateBorder}"
+        >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition SharedSizeGroup="title"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                >
+                    Plate Data
+                </TextBlock>
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="1"
+                >
+                    Save
+                </TextBlock>
+                <CheckBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding
+                        Path=CurrentPlate.WillSavePlate,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="2"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                >
+                    Airport Data
+                </TextBlock>
+
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                >
+                    IATA
+                </TextBlock>
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="3"
+                    Text="{Binding
+                        Path=CurrentPlate.IATACode,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="4"
+                >
+                    Region
+                </TextBlock>
+                <ComboBox
+                    x:Name="plateRegionComb"
+                    Grid.Column="1"
+                    Grid.Row="4"
+                    SelectedItem="{Binding
+                        Path=CurrentPlate.RegionCode,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="5"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                >
+                    Plate Data
+                </TextBlock>
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="6"
+                >
+                    Plate Type
+                </TextBlock>
+                <ComboBox
+                    x:Name="plateTypeComb"
+                    Grid.Column="1"
+                    Grid.Row="6"
+                    SelectedItem="{Binding
+                        Path=CurrentPlate.Type,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="7"
+                >
+                    Approach Type
+                </TextBlock>
+                <ComboBox
+                    x:Name="ApproachTypeComb"
+                    Grid.Column="1"
+                    Grid.Row="7"
+                    SelectedItem="{Binding
+                        Path=SelectedApproachType,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="8"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                >
+                    Runway Data
+                </TextBlock>
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="9"
+                >
+                    Runway
+                </TextBlock>
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="9"
+                    Text="{Binding
+                        Path=CurrentPlate.Runway,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="10"
+                >
+                    Appr Option
+                </TextBlock>
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="10"
+                    Text="{Binding
+                        Path=CurrentPlate.ApproachOption,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <TextBlock
+                    Grid.Column="0"
+                    Grid.Row="11"
+                >
+                    Other
+                </TextBlock>
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="11"
+                    Text="{Binding
+                        Path=CurrentPlate.Other,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                />
+
+                <Button Grid.ColumnSpan="2" Grid.Row="13" Command="{Binding Path=SavePlatesCmd}">Save Plates</Button>
+            </Grid>
+        </Border>
+
+        <GridSplitter
+            Grid.Row="1"
+            Grid.Column="3"
+        />
+
+        <Border Grid.Row="1" Grid.Column="4" Style="{StaticResource ImageBorder}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <DockPanel>
+                    <Button
+                        DockPanel.Dock="Left"
+                        Click="RotateButtons_Click"
+                        DataContext="Horz"
+                    >
+                        Horz
+                    </Button>
+                    <Button
+                        DockPanel.Dock="Right"
+                        Click="RotateButtons_Click"
+                        DataContext="Vert"
+                    >
+                        Vert
+                    </Button>
+                </DockPanel>
+                
+                <Image
+                    Grid.Row="4"
+                    RenderTransformOrigin="0.5 0.5"
+                    x:Name="currentImageElement"
+                />
+            </Grid>
+        </Border>
+        
+    </Grid>
+</Window>
