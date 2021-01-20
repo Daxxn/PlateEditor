@@ -24,4 +24,8 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>
+
+    <Style TargetType="TextBlock" x:Key="PlateListItemText">
+        <Setter Property="Margin" Value="0,0,4,0"/>
+    </Style>
 </ResourceDictionary>

@@ -31,10 +31,11 @@
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="5">
-            <MenuItem Header="Bookmarks">
+            <MenuItem Header="File">
                 <MenuItem Header="Save" Command="{Binding Path=SaveBookmarkCmd}"/>
                 <MenuItem Header="Open" Command="{Binding Path=OpenBookmarkCmd}"/>
             </MenuItem>
+            <MenuItem Header="Test" Command="{Binding Path=TestCmd}"/>
         </Menu>
 
         <Border
@@ -193,6 +194,7 @@
                             BorderThickness="2"
                             Margin="2"
                             Grid.Row="2"
+                            Grid.IsSharedSizeScope="True"
                             ItemsSource="{Binding Path=AllPlates, UpdateSourceTrigger=PropertyChanged}"
                             SelectedItem="{Binding Path=CurrentPlate, UpdateSourceTrigger=PropertyChanged}"
                         >
@@ -202,14 +204,14 @@
                                         <Image
                                             Source="\Images\SaveIconSmall.png"
                                             Visibility="{
-                                                Binding Path=WillSavePlate,
+                                                Binding Path=IsNameChanged,
                                                 UpdateSourceTrigger=PropertyChanged,
                                                 Converter={StaticResource VisibleConverter}
                                             }"
                                             Width="20"
                                             Height="20"
                                         />
-                                        <TextBlock Text="{Binding Path=FileName}"/>
+                                        <TextBlock Text="{Binding Path=FullName}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -246,6 +248,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -328,15 +331,18 @@
                     }"
                 />
 
+                <TextBlock Grid.Row="5" Grid.Column="0">Name</TextBlock>
+                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Path=CurrentPlate.Name}"/>
+
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="5"
+                    Grid.Row="6"
                 >
                     Approach Type
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="5"
+                    Grid.Row="6"
                     Text="{Binding Path=CurrentPlate.ApproachType, UpdateSourceTrigger=PropertyChanged}"
                 >
                     <TextBox.ContextMenu>
@@ -362,7 +368,7 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="6"
+                    Grid.Row="7"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Center"
                     FontSize="14"
@@ -372,13 +378,13 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="7"
+                    Grid.Row="8"
                 >
                     Runway
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="7"
+                    Grid.Row="8"
                     Text="{Binding
                         Path=CurrentPlate.Runway,
                         UpdateSourceTrigger=PropertyChanged
@@ -387,13 +393,13 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="8"
+                    Grid.Row="9"
                 >
                     Appr Option
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="8"
+                    Grid.Row="9"
                     Text="{Binding
                         Path=CurrentPlate.ApproachOption,
                         UpdateSourceTrigger=PropertyChanged
@@ -402,23 +408,23 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="9"
+                    Grid.Row="10"
                 >
                     Other
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="9"
+                    Grid.Row="10"
                     Text="{Binding
                         Path=CurrentPlate.Other,
                         UpdateSourceTrigger=PropertyChanged
                     }"
                 />
-                <CheckBox IsChecked="{Binding Path=LockedIn, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2" Grid.Row="10">
+                <CheckBox IsChecked="{Binding Path=LockedIn, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2" Grid.Row="11">
                     Locked
                 </CheckBox>
 
-                <StackPanel Grid.ColumnSpan="2" Grid.Row="12">
+                <StackPanel Grid.ColumnSpan="2" Grid.Row="13">
                     <Button
                         Grid.ColumnSpan="2"
                         Grid.Row="12"

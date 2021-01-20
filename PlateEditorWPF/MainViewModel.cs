@@ -23,7 +23,7 @@ namespace PlateEditorWPF
       private readonly string _null = "NA-";
       public event EventHandler<UpdateImageEventArgs> UpdateImage;
       private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Plate Editor Test Images";
-      private string _saveDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Cleaned Plates";
+      private string _saveDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Test1.json";
       private string _bookmarkFilePath = $"{Directory.GetCurrentDirectory()}\\Bookmark.txt";
 
       private ObservableCollection<PlateMetaData> _allPlates;
@@ -39,6 +39,8 @@ namespace PlateEditorWPF
       public Command SavePlatesJsonCmd { get; private set; }
       public Command SaveBookmarkCmd { get; private set; }
       public Command OpenBookmarkCmd { get; private set; }
+
+      public Command TestCmd { get; private set; }
       #endregion
 
       private bool _toggleSaveAll;
@@ -52,16 +54,23 @@ namespace PlateEditorWPF
          OpenRootDirCmd = new Command(OpenRootDir);
          PrevImageCmd = new Command(PrevImage);
          NextImageCmd = new Command(NextImage);
-         SavePlatesCmd = new Command(SavePlates);
+         //SavePlatesCmd = new Command(SavePlates);
          SavePlatesJsonCmd = new Command(SaveJsonPlates);
          SaveBookmarkCmd = new Command(SaveBookmark);
          OpenBookmarkCmd = new Command(OpenBookmark);
+
+         TestCmd = new Command(Test);
 
          ApproachTypes = PlateMetaData.ApproachTypes;
       }
       #endregion
 
       #region - Methods
+      public void Test(object p)
+      {
+
+      }
+
       public void CheckValues()
       {
          if (CurrentPlate != null)
@@ -127,7 +136,12 @@ namespace PlateEditorWPF
       {
          try
          {
-            AllPlates = new ObservableCollection<PlateMetaData>(PlateMetaData.BuildMetaData(Directory.GetFiles(RootDirectory)));
+            AllPlates = new ObservableCollection<PlateMetaData>(
+               PlateMetaData.BuildMetaData(
+                  Directory.GetFiles(RootDirectory)
+               )
+            );
+
             if (AllPlates.Count > 0)
             {
                CurrentPlate = AllPlates[0];
@@ -169,39 +183,38 @@ namespace PlateEditorWPF
          }
       }
 
-      private void SavePlates(object p)
-      {
-         var savedFiles = new List<SavedFile>();
-         var errOccured = false;
-         if (ToggleOverwrite)
-         {
-            var delResult = Parallel.ForEach(Directory.GetFiles(SaveDirectory), (filePath) =>
-            {
-               File.Delete(filePath);
-            });
-         }
+      //private void SavePlates(object p)
+      //{
+      //   var savedFiles = new List<SavedFile>();
+      //   var errOccured = false;
+      //   if (ToggleOverwrite)
+      //   {
+      //      var delResult = Parallel.ForEach(Directory.GetFiles(SaveDirectory), (filePath) =>
+      //      {
+      //         File.Delete(filePath);
+      //      });
+      //   }
 
-         var result = Parallel.ForEach(AllPlates, (plate) =>
-         {
-               try
-               {
-                  plate.Save(SaveDirectory);
-                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, null));
-               }
-               catch (Exception e)
-               {
-                  errOccured = true;
-                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, e));
-               }
-         });
+      //   var result = Parallel.ForEach(AllPlates, (plate) =>
+      //   {
+      //         try
+      //         {
+      //            plate.Save(SaveDirectory);
+      //            savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, null));
+      //         }
+      //         catch (Exception e)
+      //         {
+      //            errOccured = true;
+      //            savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, e));
+      //         }
+      //   });
 
-         var newSaveCmpDialog = new SaveCompletedDialog(errOccured ? "Save Completed, some errors occured." : "Save Completed.", RootDirectory, SaveDirectory, savedFiles);
-         newSaveCmpDialog.ShowDialog();
-      }
+      //   var newSaveCmpDialog = new SaveCompletedDialog(errOccured ? "Save Completed, some errors occured." : "Save Completed.", RootDirectory, SaveDirectory, savedFiles);
+      //   newSaveCmpDialog.ShowDialog();
+      //}
 
       public void SaveJsonPlates(object p)
       {
-         var errOccured = false;
          try
          {
             JsonReader.SaveJsonFile(SaveDirectory, AllPlates, true, true);
@@ -356,6 +369,7 @@ namespace PlateEditorWPF
             CheckValues();
             _currentPlate = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(AllPlates));
             OnPropertyChanged(nameof(CurrentPlateIndex));
             Update();
          }
