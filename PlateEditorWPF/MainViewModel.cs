@@ -10,8 +10,10 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using PlateEditorWPF.Events;
+using PlateEditorWPF.Models;
 using System.Threading.Tasks;
 using System.Threading;
+using JsonReaderLibrary;
 
 namespace PlateEditorWPF
 {
@@ -20,14 +22,12 @@ namespace PlateEditorWPF
       #region - Fields & Properties
       private readonly string _null = "NA-";
       public event EventHandler<UpdateImageEventArgs> UpdateImage;
-      private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\All Plate Images";
-      private string _backupDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Cleaned Plates";
+      private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Plate Editor Test Images";
+      private string _saveDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Cleaned Plates";
       private string _bookmarkFilePath = $"{Directory.GetCurrentDirectory()}\\Bookmark.txt";
 
       private ObservableCollection<PlateMetaData> _allPlates;
-      //private Pl _currentFilePath;
       private PlateMetaData _currentPlate;
-      private int _currentFilePathIndex;
 
       private Dictionary<string, string> _approachTypes;
 
@@ -36,12 +36,14 @@ namespace PlateEditorWPF
       public Command PrevImageCmd { get; private set; }
       public Command NextImageCmd { get; private set; }
       public Command SavePlatesCmd { get; private set; }
+      public Command SavePlatesJsonCmd { get; private set; }
       public Command SaveBookmarkCmd { get; private set; }
       public Command OpenBookmarkCmd { get; private set; }
       #endregion
 
-      private string _selectedApproachType;
       private bool _toggleSaveAll;
+      private bool _toggleOverwrite;
+      private ObservableCollection<string> _allApproachTypes;
       #endregion
 
       #region - Constructors
@@ -51,6 +53,7 @@ namespace PlateEditorWPF
          PrevImageCmd = new Command(PrevImage);
          NextImageCmd = new Command(NextImage);
          SavePlatesCmd = new Command(SavePlates);
+         SavePlatesJsonCmd = new Command(SaveJsonPlates);
          SaveBookmarkCmd = new Command(SaveBookmark);
          OpenBookmarkCmd = new Command(OpenBookmark);
 
@@ -88,7 +91,6 @@ namespace PlateEditorWPF
          {
             if (e.AddedItems[0] is string selectedKey)
             {
-               //ApproachTypeSelected(selectedKey);
                CurrentPlate.ApproachType = PlateMetaData.ApproachTypes[selectedKey];
             }
          }
@@ -100,7 +102,7 @@ namespace PlateEditorWPF
          {
             if (e.AddedItems[0] is PlateMetaData plate)
             {
-               CurrentPlateIndex = AllPlates.IndexOf(plate);
+               CurrentPlate = plate;
             }
          }
       }
@@ -109,7 +111,6 @@ namespace PlateEditorWPF
       {
          if (CurrentPlate != null)
          {
-            //CurrentPlate.ApproachType = PlateMetaData.ApproachTypes[value];
             CurrentPlate.GetApproachType(value);
          }
       }
@@ -129,7 +130,7 @@ namespace PlateEditorWPF
             AllPlates = new ObservableCollection<PlateMetaData>(PlateMetaData.BuildMetaData(Directory.GetFiles(RootDirectory)));
             if (AllPlates.Count > 0)
             {
-               CurrentPlateIndex = 0;
+               CurrentPlate = AllPlates[0];
             }
          }
          catch (Exception e)
@@ -138,62 +139,33 @@ namespace PlateEditorWPF
          }
       }
 
-      //private void SetSelectedFileData()
-      //{
-      //   try
-      //   {
-      //      //CurrentFilePath = AllPlates[CurrentFilePathIndex];
-      //      CurrentPlate = AllPlates[CurrentPlateIndex];
-      //      if (AllPlates.Count > 0)
-      //      {
-      //         UpdateImage?.Invoke(this, new UpdateImageEventArgs(CurrentPlate.PlateFile));
-      //      }
-      //   }
-      //   catch (Exception e)
-      //   {
-      //      MessageBox.Show($"Unable to select file.\n\n{e.Message}", "Error!");
-      //   }
-      //}
-
       private void NextImage(object p)
       {
-         CurrentPlateIndex++;
+         if (AllPlates != null)
+         {
+            if (CurrentPlateIndex + 1 >= AllPlates.Count)
+            {
+               CurrentPlate = AllPlates[0];
+            }
+            else
+            {
+               CurrentPlate = AllPlates[CurrentPlateIndex + 1];
+            }
+         }
       }
 
       private void PrevImage(object p)
       {
-         CurrentPlateIndex--;
-      }
-
-      public async void SaveFilesEvent(object sender, EventArgs e)
-      {
-         await RenameFiles();
-      }
-      /// <summary>
-      /// IT NO WORKIEE!! Cant fire an event delegate on a different thread.
-      /// Going to have to make a copy of the file and send it to another folder.
-      /// </summary>
-      private async Task RenameFiles()
-      {
-         try
+         if (AllPlates != null)
          {
-            await Task.Run(() =>
+            if (CurrentPlateIndex - 1 < 0)
             {
-               foreach (var plate in AllPlates)
-               {
-                  if (plate.IsNameChanged)
-                  {
-                     string newPath = Path.Combine(SaveDirectory, plate.FileName);
-                     File.Copy(plate.PlateFile.LocalPath, newPath, true);
-                  }
-               }
-            });
-
-            MessageBox.Show("All Plates Saved.", "Done");
-         }
-         catch (Exception e)
-         {
-            MessageBox.Show(e.Message);
+               CurrentPlate = AllPlates[^1];
+            }
+            else
+            {
+               CurrentPlate = AllPlates[CurrentPlateIndex - 1];
+            }
          }
       }
 
@@ -201,32 +173,50 @@ namespace PlateEditorWPF
       {
          var savedFiles = new List<SavedFile>();
          var errOccured = false;
+         if (ToggleOverwrite)
+         {
+            var delResult = Parallel.ForEach(Directory.GetFiles(SaveDirectory), (filePath) =>
+            {
+               File.Delete(filePath);
+            });
+         }
+
          var result = Parallel.ForEach(AllPlates, (plate) =>
          {
-            if (plate.WillSavePlate)
-            {
                try
                {
                   plate.Save(SaveDirectory);
-                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile.LocalPath, null));
+                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, null));
                }
                catch (Exception e)
                {
                   errOccured = true;
-                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile.LocalPath, e));
+                  savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, e));
                }
-            }
          });
 
          var newSaveCmpDialog = new SaveCompletedDialog(errOccured ? "Save Completed, some errors occured." : "Save Completed.", RootDirectory, SaveDirectory, savedFiles);
          newSaveCmpDialog.ShowDialog();
       }
 
+      public void SaveJsonPlates(object p)
+      {
+         var errOccured = false;
+         try
+         {
+            JsonReader.SaveJsonFile(SaveDirectory, AllPlates, true, true);
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show(e.Message);
+         }
+      }
+
       private void Update()
       {
          if (CurrentPlate != null)
          {
-            UpdateImage?.Invoke(this, new UpdateImageEventArgs(CurrentPlate.PlateFile));
+            UpdateImage?.Invoke(this, new UpdateImageEventArgs(new Uri(CurrentPlate.PlateFile)));
          }
       }
 
@@ -243,7 +233,7 @@ namespace PlateEditorWPF
          StringBuilder bookmarkFileBuilder = new StringBuilder();
          bookmarkFileBuilder.AppendLine(RootDirectory);
          bookmarkFileBuilder.AppendLine(SaveDirectory);
-         bookmarkFileBuilder.AppendLine(CurrentPlate.PlateFile.LocalPath);
+         bookmarkFileBuilder.AppendLine(CurrentPlate.PlateFile);
 
          try
          {
@@ -273,7 +263,7 @@ namespace PlateEditorWPF
 
                if (AllPlates.Count > 0)
                {
-                  CurrentPlate = AllPlates.First(plate => plate.PlateFile.LocalPath == bookmarkFilePath);
+                  CurrentPlate = AllPlates.First(plate => plate.PlateFile == bookmarkFilePath);
                }
             }
             else
@@ -284,6 +274,27 @@ namespace PlateEditorWPF
          catch (Exception e)
          {
             MessageBox.Show(e.Message, "Bookmark Open Error");
+         }
+      }
+
+      public void GetAllApproachTypes(object sender, EventArgs e)
+      {
+         var apTypes = new List<string>();
+         foreach (var plate in AllPlates)
+         {
+            if (!apTypes.Contains(plate.ApproachType))
+            {
+               apTypes.Add(plate.ApproachType);
+            }
+         }
+         AllApproachTypes = new ObservableCollection<string>(apTypes);
+      }
+
+      public void AllApproachTypesSelection(object sender, SelectionChangedEventArgs e)
+      {
+         if (e.AddedItems.Count == 1 && e.AddedItems[0] is string newAp)
+         {
+            CurrentPlate.ApproachType = newAp;
          }
       }
       #endregion
@@ -310,10 +321,10 @@ namespace PlateEditorWPF
 
       public string SaveDirectory
       {
-         get { return _backupDir; }
+         get { return _saveDir; }
          set
          {
-            _backupDir = value;
+            _saveDir = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(SaveDirExists));
          }
@@ -344,48 +355,17 @@ namespace PlateEditorWPF
          {
             CheckValues();
             _currentPlate = value;
-            if (value != null)
-            {
-               SelectedApproachType = value.GetApproachTypeKey(value.ApproachType);
-            }
-            else
-            {
-               SelectedApproachType = _null;
-            }
-            //ApproachTypeSelected(value.ApproachType);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(CurrentPlateIndex));
             Update();
          }
       }
 
       public int CurrentPlateIndex
       {
-         get { return _currentFilePathIndex; }
-         set
+         get
          {
-            if (AllPlates != null)
-            {
-               if (value >= AllPlates.Count)
-               {
-                  _currentFilePathIndex = 0;
-                  CurrentPlate = AllPlates[0];
-               }
-               else if (value < 0)
-               {
-                  _currentFilePathIndex =
-                     AllPlates != null || AllPlates.Count > 0
-                     ? AllPlates.Count - 1
-                     : 0;
-                  CurrentPlate = AllPlates[AllPlates.Count - 1];
-               }
-               else
-               {
-                  _currentFilePathIndex = value;
-                  CurrentPlate = AllPlates[value];
-               }
-               OnPropertyChanged(nameof(CurrentPlate));
-               //SetSelectedFileData();
-            }
+            return AllPlates.IndexOf(CurrentPlate);
          }
       }
 
@@ -399,23 +379,35 @@ namespace PlateEditorWPF
          }
       }
 
-      public string SelectedApproachType
-      {
-         get { return _selectedApproachType; }
-         set
-         {
-            _selectedApproachType = value;
-            CurrentPlate.ApproachType = PlateMetaData.ApproachTypes[value];
-            OnPropertyChanged();
-         }
-      }
-
       public bool ToggleSaveAll
       {
          get { return _toggleSaveAll; }
          set
          {
             _toggleSaveAll = value;
+            OnPropertyChanged();
+         }
+      }
+
+      public bool ToggleOverwrite
+      {
+         get { return _toggleOverwrite; }
+         set
+         {
+            _toggleOverwrite = value;
+            OnPropertyChanged();
+         }
+      }
+
+      public ObservableCollection<string> AllApproachTypes
+      {
+         get
+         {
+            return _allApproachTypes;
+         }
+         set
+         {
+            _allApproachTypes = value;
             OnPropertyChanged();
          }
       }

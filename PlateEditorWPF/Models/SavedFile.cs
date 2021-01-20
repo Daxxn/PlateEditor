@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PlateEditorWPF
+namespace PlateEditorWPF.Models
 {
    public struct SavedFile
    {

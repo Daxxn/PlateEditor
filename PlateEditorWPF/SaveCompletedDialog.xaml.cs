@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PlateEditorWPF.Models;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;

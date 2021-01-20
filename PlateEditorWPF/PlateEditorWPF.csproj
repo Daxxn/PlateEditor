@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Libraries\JsonReaderLibrary\JsonReaderLibrary\JsonReaderLibrary.csproj" />
     <ProjectReference Include="..\..\..\..\Libraries\MVVMLibrary\MVVMLibrary\MVVMLibrary.csproj" />
   </ItemGroup>
 

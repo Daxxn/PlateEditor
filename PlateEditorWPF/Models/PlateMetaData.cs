@@ -1,11 +1,12 @@
-﻿using MVVMLibrary;
+﻿using JsonReaderLibrary;
+using MVVMLibrary;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace PlateEditorWPF
+namespace PlateEditorWPF.Models
 {
    public enum PlateType
    {
@@ -67,7 +68,7 @@ namespace PlateEditorWPF
       private string _approachOption;
       private string _other;
 
-      private Uri _plateFile;
+      private string _plateFile;
       private bool _savePlate;
       #endregion
 
@@ -89,8 +90,7 @@ namespace PlateEditorWPF
                   IATACode = nameSplit[0],
                   RegionCode = nameSplit[1],
                   Type = Enum.Parse<PlateType>(nameSplit[2]),
-                  //ApproachType = ApproachTypes.ContainsKey(nameSplit[3]) ? ApproachTypes[nameSplit[3]] : "NA-",
-                  ApproachType = apType,
+                  ApproachType = nameSplit[3],
                   Runway = nameSplit[4],
                   ApproachOption = nameSplit[5],
                   Other = nameSplit[6],
@@ -113,7 +113,7 @@ namespace PlateEditorWPF
          foreach (var platePath in filePaths)
          {
             var plate = ParseName(Path.GetFileNameWithoutExtension(platePath));
-            plate.PlateFile = new Uri(platePath);
+            plate.PlateFile = platePath;
             output.Add(plate);
          }
          return output;
@@ -121,14 +121,11 @@ namespace PlateEditorWPF
 
       public void Save(string saveDir)
       {
-         if (WillSavePlate)
-         {
-            File.Copy(
-                  PlateFile.LocalPath,
-                  Path.Combine(saveDir, FileName),
-                  true
-               );
-         }
+         File.Copy(
+               PlateFile,
+               Path.Combine(saveDir, FileName),
+               true
+            );
       }
 
       public string GetApproachTypeKey(string apType)
@@ -239,7 +236,7 @@ namespace PlateEditorWPF
          }
       }
 
-      public Uri PlateFile
+      public string PlateFile
       {
          get { return _plateFile; }
          set
@@ -267,7 +264,7 @@ namespace PlateEditorWPF
             {
                return false;
             }
-            return Path.GetFileNameWithoutExtension(PlateFile.LocalPath) != ToString();
+            return Path.GetFileNameWithoutExtension(PlateFile) != ToString();
          }
       }
 

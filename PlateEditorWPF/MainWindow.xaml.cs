@@ -1,4 +1,5 @@
 ﻿using PlateEditorWPF.Events;
+using PlateEditorWPF.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,9 +33,11 @@ namespace PlateEditorWPF
          InitializeComponent();
          plateTypeComb.ItemsSource = Enum.GetValues(typeof(PlateType));
          plateRegionComb.ItemsSource = PlateMetaData.AllRegions;
-         ApproachTypeComb.ItemsSource = PlateMetaData.ApproachTypes.Keys;
+
          ToggleSaveCB.Click += VM.ToggleSaveAllEvent;
          allPlatesView.SelectionChanged += VM.AllPlatesViewSelectEvent;
+         CurrentPlateApproachTypeCM.Opened += VM.GetAllApproachTypes;
+         AllApproachTypesView.SelectionChanged += VM.AllApproachTypesSelection;
 
          VM.UpdateImage += VM_UpdateImage;
       }

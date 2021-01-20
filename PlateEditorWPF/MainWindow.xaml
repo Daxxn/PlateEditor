@@ -171,11 +171,21 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <CheckBox Grid.Row="0" x:Name="ToggleSaveCB" IsChecked="{Binding Path=ToggleSaveAll}">
-                            Save All
-                        </CheckBox>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" x:Name="ToggleSaveCB" IsChecked="{Binding Path=ToggleSaveAll}">
+                                Save All
+                            </CheckBox>
+                            <CheckBox Grid.Column="1" x:Name="ToggleOverwriteCB" IsChecked="{Binding Path=ToggleOverwrite}">
+                                Overwrite Folder
+                            </CheckBox>
+                        </Grid>
                         <TextBlock Grid.Row="1">Plate Paths</TextBlock>
                         <ListView
                             x:Name="allPlatesView"
@@ -204,6 +214,16 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
+
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Padding="0,0,10,0">Plate Count</TextBlock>
+                            <TextBlock Grid.Column="1" Text="{Binding Path=AllPlates.Count}"/>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
@@ -237,41 +257,13 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock
+                    Grid.Column="0"
                     Grid.Row="0"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                >
-                    Plate Data
-                </TextBlock>
-
-                <TextBlock
-                    Grid.Column="0"
-                    Grid.Row="1"
-                >
-                    Save
-                </TextBlock>
-                <CheckBox
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding
-                        Path=CurrentPlate.WillSavePlate,
-                        UpdateSourceTrigger=PropertyChanged
-                    }"
-                />
-
-                <TextBlock
-                    Grid.Column="0"
-                    Grid.Row="2"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Center"
                     FontSize="14"
@@ -280,14 +272,14 @@
                 </TextBlock>
 
                 <TextBlock
-                    Grid.Row="3"
+                    Grid.Row="1"
                     Grid.Column="0"
                 >
                     IATA
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="3"
+                    Grid.Row="1"
                     Text="{Binding
                         Path=CurrentPlate.IATACode,
                         UpdateSourceTrigger=PropertyChanged
@@ -296,14 +288,14 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="4"
+                    Grid.Row="2"
                 >
                     Region
                 </TextBlock>
                 <ComboBox
                     x:Name="plateRegionComb"
                     Grid.Column="1"
-                    Grid.Row="4"
+                    Grid.Row="2"
                     SelectedItem="{Binding
                         Path=CurrentPlate.RegionCode,
                         UpdateSourceTrigger=PropertyChanged
@@ -312,7 +304,7 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="5"
+                    Grid.Row="3"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Center"
                     FontSize="14"
@@ -322,14 +314,14 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="6"
+                    Grid.Row="4"
                 >
                     Plate Type
                 </TextBlock>
                 <ComboBox
                     x:Name="plateTypeComb"
                     Grid.Column="1"
-                    Grid.Row="6"
+                    Grid.Row="4"
                     SelectedItem="{Binding
                         Path=CurrentPlate.Type,
                         UpdateSourceTrigger=PropertyChanged
@@ -338,23 +330,39 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="7"
+                    Grid.Row="5"
                 >
                     Approach Type
                 </TextBlock>
-                <ComboBox
-                    x:Name="ApproachTypeComb"
+                <TextBox
                     Grid.Column="1"
-                    Grid.Row="7"
-                    SelectedItem="{Binding
-                        Path=SelectedApproachType,
-                        UpdateSourceTrigger=PropertyChanged
-                    }"
-                />
+                    Grid.Row="5"
+                    Text="{Binding Path=CurrentPlate.ApproachType, UpdateSourceTrigger=PropertyChanged}"
+                >
+                    <TextBox.ContextMenu>
+                        <ContextMenu Name="CurrentPlateApproachTypeCM">
+                            <MenuItem Header="Copy" Command="{Binding Path=ApplicationCommands.Copy}"/>
+                            <MenuItem Header="Paste" Command="{Binding Path=ApplicationCommands.Paste}"/>
+                            <Separator/>
+                            <MenuItem IsManipulationEnabled="False" IsCheckable="False">
+                                <ListBox
+                                        ItemsSource="{Binding Path=AllApproachTypes}"
+                                        Name="AllApproachTypesView"
+                                    >
+                                    <!--<ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>-->
+                                </ListBox>
+                            </MenuItem>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="8"
+                    Grid.Row="6"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Center"
                     FontSize="14"
@@ -364,13 +372,13 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="9"
+                    Grid.Row="7"
                 >
                     Runway
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="9"
+                    Grid.Row="7"
                     Text="{Binding
                         Path=CurrentPlate.Runway,
                         UpdateSourceTrigger=PropertyChanged
@@ -379,13 +387,13 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="10"
+                    Grid.Row="8"
                 >
                     Appr Option
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="10"
+                    Grid.Row="8"
                     Text="{Binding
                         Path=CurrentPlate.ApproachOption,
                         UpdateSourceTrigger=PropertyChanged
@@ -394,20 +402,34 @@
 
                 <TextBlock
                     Grid.Column="0"
-                    Grid.Row="11"
+                    Grid.Row="9"
                 >
                     Other
                 </TextBlock>
                 <TextBox
                     Grid.Column="1"
-                    Grid.Row="11"
+                    Grid.Row="9"
                     Text="{Binding
                         Path=CurrentPlate.Other,
                         UpdateSourceTrigger=PropertyChanged
                     }"
                 />
+                <CheckBox IsChecked="{Binding Path=LockedIn, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2" Grid.Row="10">
+                    Locked
+                </CheckBox>
 
-                <Button Grid.ColumnSpan="2" Grid.Row="13" Command="{Binding Path=SavePlatesCmd}">Save Plates</Button>
+                <StackPanel Grid.ColumnSpan="2" Grid.Row="12">
+                    <Button
+                        Grid.ColumnSpan="2"
+                        Grid.Row="12"
+                        Command="{Binding Path=SavePlatesCmd}"
+                    >
+                        Save Plates
+                    </Button>
+                    <Button Command="{Binding Path=SavePlatesJsonCmd}">
+                        Save Json Plates
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -423,23 +445,23 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <DockPanel>
+                <StackPanel Orientation="Horizontal">
                     <Button
-                        DockPanel.Dock="Left"
+                        Padding="5,2,5,2"
                         Click="RotateButtons_Click"
                         DataContext="Horz"
                     >
                         Horz
                     </Button>
                     <Button
-                        DockPanel.Dock="Right"
+                        Padding="5,2,5,2"
                         Click="RotateButtons_Click"
                         DataContext="Vert"
                     >
                         Vert
                     </Button>
-                </DockPanel>
-                
+                </StackPanel>
+
                 <Image
                     Grid.Row="4"
                     RenderTransformOrigin="0.5 0.5"
@@ -447,6 +469,6 @@
                 />
             </Grid>
         </Border>
-        
+
     </Grid>
 </Window>
