@@ -107,6 +107,36 @@ namespace PlateEditorWPF.Models
             throw;
          }
       }
+      public static PlateMetaData ParseFileName(string path)
+      {
+         try
+         {
+            string name = Path.GetFileNameWithoutExtension(path);
+            string[] nameSplit = name.Split(' ', StringSplitOptions.None);
+            if (nameSplit.Length == 7)
+            {
+               var apType = nameSplit[3];
+               return new PlateMetaData
+               {
+                  IATACode = nameSplit[0],
+                  RegionCode = nameSplit[1],
+                  Type = Enum.Parse<PlateType>(nameSplit[2]),
+                  ApproachType = nameSplit[3],
+                  Runway = nameSplit[4],
+                  ApproachOption = nameSplit[5],
+                  Other = nameSplit[6],
+               };
+            }
+            else
+            {
+               throw new ArgumentException($"Name parse failed. The names length ({nameSplit.Length}) doesn match the metadata properties. (7)");
+            }
+         }
+         catch (Exception)
+         {
+            throw;
+         }
+      }
 
       public static List<PlateMetaData> BuildMetaData(string[] filePaths)
       {

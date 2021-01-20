@@ -14,12 +14,15 @@ using PlateEditorWPF.Models;
 using System.Threading.Tasks;
 using System.Threading;
 using JsonReaderLibrary;
+using System.Windows.Media;
 
 namespace PlateEditorWPF
 {
    public class MainViewModel : ViewModel
    {
       #region - Fields & Properties
+      private Page<PlateMetaData> _page;
+
       private readonly string _null = "NA-";
       public event EventHandler<UpdateImageEventArgs> UpdateImage;
       private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Plate Editor Test Images";
@@ -39,6 +42,8 @@ namespace PlateEditorWPF
       public Command SavePlatesJsonCmd { get; private set; }
       public Command SaveBookmarkCmd { get; private set; }
       public Command OpenBookmarkCmd { get; private set; }
+      public Command PrevPageCmd { get; private set; }
+      public Command NextPageCmd { get; private set; }
 
       public Command TestCmd { get; private set; }
       #endregion
@@ -51,13 +56,17 @@ namespace PlateEditorWPF
       #region - Constructors
       public MainViewModel()
       {
+         //ListManager = new ListManager<PlateMetaData>(50, PlateMetaData.ParseFileName);
          OpenRootDirCmd = new Command(OpenRootDir);
-         PrevImageCmd = new Command(PrevImage);
-         NextImageCmd = new Command(NextImage);
+         PrevImageCmd = new Command(PrevPlate);
+         NextImageCmd = new Command(NextPlate);
          //SavePlatesCmd = new Command(SavePlates);
          SavePlatesJsonCmd = new Command(SaveJsonPlates);
          SaveBookmarkCmd = new Command(SaveBookmark);
          OpenBookmarkCmd = new Command(OpenBookmark);
+
+         PrevPageCmd = new Command(PrevPage);
+         NextPageCmd = new Command(NextPage);
 
          TestCmd = new Command(Test);
 
@@ -68,7 +77,8 @@ namespace PlateEditorWPF
       #region - Methods
       public void Test(object p)
       {
-
+         //ListManager.NextPage();
+         Page.SelectPage(1);
       }
 
       public void CheckValues()
@@ -136,16 +146,23 @@ namespace PlateEditorWPF
       {
          try
          {
-            AllPlates = new ObservableCollection<PlateMetaData>(
+            //AllPlates = new ObservableCollection<PlateMetaData>(
+            //   PlateMetaData.BuildMetaData(
+            //      Directory.GetFiles(RootDirectory)
+            //   )
+            //);
+            Page = new Page<PlateMetaData>(
+               50,
                PlateMetaData.BuildMetaData(
                   Directory.GetFiles(RootDirectory)
                )
             );
+            CurrentPlate = Page.PageData[0];
 
-            if (AllPlates.Count > 0)
-            {
-               CurrentPlate = AllPlates[0];
-            }
+            //if (AllPlates.Count > 0)
+            //{
+            //   CurrentPlate = AllPlates[0];
+            //}
          }
          catch (Exception e)
          {
@@ -153,34 +170,76 @@ namespace PlateEditorWPF
          }
       }
 
-      private void NextImage(object p)
+      //private void NextImage(object p)
+      //{
+      //   if (AllPlates != null)
+      //   {
+      //      if (CurrentPlateIndex + 1 >= AllPlates.Count)
+      //      {
+      //         CurrentPlate = AllPlates[0];
+      //      }
+      //      else
+      //      {
+      //         CurrentPlate = AllPlates[CurrentPlateIndex + 1];
+      //      }
+      //   }
+      //}
+
+      //private void PrevImage(object p)
+      //{
+      //   if (AllPlates != null)
+      //   {
+      //      if (CurrentPlateIndex - 1 < 0)
+      //      {
+      //         CurrentPlate = AllPlates[^1];
+      //      }
+      //      else
+      //      {
+      //         CurrentPlate = AllPlates[CurrentPlateIndex - 1];
+      //      }
+      //   }
+      //}
+
+      private void PrevPlate(object p)
       {
-         if (AllPlates != null)
+         if (Page is null) return;
+
+         if (CurrentPlateIndex - 1 < 0)
          {
-            if (CurrentPlateIndex + 1 >= AllPlates.Count)
-            {
-               CurrentPlate = AllPlates[0];
-            }
-            else
-            {
-               CurrentPlate = AllPlates[CurrentPlateIndex + 1];
-            }
+            CurrentPlate = Page.PageData[^1];
+         }
+         else
+         {
+            CurrentPlate = Page.PageData[CurrentPlateIndex - 1];
          }
       }
 
-      private void PrevImage(object p)
+      private void NextPlate(object p)
       {
-         if (AllPlates != null)
+         if (Page is null) return;
+
+         if (CurrentPlateIndex + 1 >= AllPlates.Count)
          {
-            if (CurrentPlateIndex - 1 < 0)
-            {
-               CurrentPlate = AllPlates[^1];
-            }
-            else
-            {
-               CurrentPlate = AllPlates[CurrentPlateIndex - 1];
-            }
+            CurrentPlate = Page.PageData[0];
          }
+         else
+         {
+            CurrentPlate = Page.PageData[CurrentPlateIndex + 1];
+         }
+      }
+
+      private void PrevPage(object p)
+      {
+         if (Page is null) return;
+         Page.PageNumber--;
+         CurrentPlate = Page.PageData[0];
+      }
+
+      private void NextPage(object p)
+      {
+         if (Page is null) return;
+            Page.PageNumber++;
+            CurrentPlate = Page.PageData[0];
       }
 
       //private void SavePlates(object p)
@@ -313,6 +372,17 @@ namespace PlateEditorWPF
       #endregion
 
       #region - Full Properties
+      public Page<PlateMetaData> Page
+      {
+         get { return _page; }
+         set
+         {
+            _page = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AllPlates));
+         }
+      }
+
       public string RootDirectory
       {
          get { return _rootDir; }
@@ -379,7 +449,9 @@ namespace PlateEditorWPF
       {
          get
          {
-            return AllPlates.IndexOf(CurrentPlate);
+            //return AllPlates.IndexOf(CurrentPlate);
+            if (Page is null) return 0;
+            return Page.PageData.IndexOf(CurrentPlate);
          }
       }
 
