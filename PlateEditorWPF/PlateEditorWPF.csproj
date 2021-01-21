@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\PlateIcon.svg" />
+    <None Remove="Images\PlateIconBig.png" />
+    <None Remove="Images\PlateIconMed.png" />
+    <None Remove="Images\PlateIconSml.png" />
     <None Remove="Images\SaveIcon.png" />
     <None Remove="Images\SaveIconSmall.png" />
   </ItemGroup>
@@ -17,6 +21,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\PlateIcon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\PlateIconBig.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\PlateIconMed.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\PlateIconSml.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\SaveIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

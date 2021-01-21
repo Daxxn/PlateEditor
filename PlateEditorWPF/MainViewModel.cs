@@ -25,9 +25,9 @@ namespace PlateEditorWPF
 
       private readonly string _null = "NA-";
       public event EventHandler<UpdateImageEventArgs> UpdateImage;
-      private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Plate Editor Test Images";
-      private string _saveDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\Test1.json";
-      private string _bookmarkFilePath = $"{Directory.GetCurrentDirectory()}\\Bookmark.txt";
+      private string _rootDir = @"B:\Games\OtherGames\FS 2020\Airport Plates\All Plate Images Test\A";
+      private string _saveFile = @"B:\Games\OtherGames\FS 2020\Airport Plates\AllPlates.json";
+      private string _bookmarkFilePath = $"{Directory.GetCurrentDirectory()}\\Bookmark.json";
 
       private ObservableCollection<PlateMetaData> _allPlates;
       private PlateMetaData _currentPlate;
@@ -36,19 +36,21 @@ namespace PlateEditorWPF
 
       #region Commands
       public Command OpenRootDirCmd { get; private set; }
+      public Command AppendRootDirCmd { get; private set; }
       public Command PrevImageCmd { get; private set; }
       public Command NextImageCmd { get; private set; }
       public Command SavePlatesCmd { get; private set; }
       public Command SavePlatesJsonCmd { get; private set; }
+      public Command OpenPlatesJsonCmd { get; private set; }
       public Command SaveBookmarkCmd { get; private set; }
       public Command OpenBookmarkCmd { get; private set; }
       public Command PrevPageCmd { get; private set; }
       public Command NextPageCmd { get; private set; }
+      public Command ArrDepParseCmd { get; private set; }
 
       public Command TestCmd { get; private set; }
       #endregion
 
-      private bool _toggleSaveAll;
       private bool _toggleOverwrite;
       private ObservableCollection<string> _allApproachTypes;
       #endregion
@@ -56,17 +58,20 @@ namespace PlateEditorWPF
       #region - Constructors
       public MainViewModel()
       {
-         //ListManager = new ListManager<PlateMetaData>(50, PlateMetaData.ParseFileName);
          OpenRootDirCmd = new Command(OpenRootDir);
+         AppendRootDirCmd = new Command(AppendPlates);
          PrevImageCmd = new Command(PrevPlate);
          NextImageCmd = new Command(NextPlate);
-         //SavePlatesCmd = new Command(SavePlates);
          SavePlatesJsonCmd = new Command(SaveJsonPlates);
+         OpenPlatesJsonCmd = new Command(OpenJsonPlates);
+
          SaveBookmarkCmd = new Command(SaveBookmark);
          OpenBookmarkCmd = new Command(OpenBookmark);
 
          PrevPageCmd = new Command(PrevPage);
          NextPageCmd = new Command(NextPage);
+
+         ArrDepParseCmd = new Command(ArrDepParse);
 
          TestCmd = new Command(Test);
 
@@ -75,12 +80,178 @@ namespace PlateEditorWPF
       #endregion
 
       #region - Methods
+      /// <summary>
+      /// Just for testing stuff. Nothin else.
+      /// </summary>
       public void Test(object p)
       {
-         //ListManager.NextPage();
-         Page.SelectPage(1);
+         var allHashCodes = new List<int>();
+         foreach (var plate in Page.AllData)
+         {
+            allHashCodes.Add(plate.GetHashCode());
+         }
       }
 
+      #region Command Methods
+      private void OpenRootDir(object p)
+      {
+         if (RootDirExists)
+         {
+            GetRootFiles();
+         }
+      }
+
+      private void PrevPlate(object p)
+      {
+         if (Page is null) return;
+
+         if (CurrentPlateIndex - 1 < 0)
+         {
+            CurrentPlate = Page.PageData[^1];
+         }
+         else
+         {
+            CurrentPlate = Page.PageData[CurrentPlateIndex - 1];
+         }
+      }
+
+      private void NextPlate(object p)
+      {
+         if (Page is null) return;
+
+         if (CurrentPlateIndex + 1 >= Page.PageData.Count)
+         {
+            CurrentPlate = Page.PageData[0];
+         }
+         else
+         {
+            CurrentPlate = Page.PageData[CurrentPlateIndex + 1];
+         }
+      }
+
+      private void PrevPage(object p)
+      {
+         if (Page is null) return;
+         Page.PageNumber--;
+         CurrentPlate = Page.PageData[0];
+      }
+
+      private void NextPage(object p)
+      {
+         if (Page is null) return;
+         Page.PageNumber++;
+         CurrentPlate = Page.PageData[0];
+      }
+
+      private void OpenJsonPlates(object p)
+      {
+         try
+         {
+            Page = new Page<PlateMetaData>((Page is null ? 50 : Page.PageSize), JsonReader.OpenJsonFile<List<PlateMetaData>>(SaveFile));
+            if (Page.AllData.Count > 0)
+            {
+               CurrentPlate = Page.PageData[0];
+            }
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show(e.Message);
+         }
+      }
+
+      private void SaveJsonPlates(object p)
+      {
+         try
+         {
+            JsonReader.SaveJsonFile(SaveFile, Page.AllData, true, true);
+
+            MessageBox.Show("Saved Plates", "Done");
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show(e.Message);
+         }
+      }
+
+      private void AppendPlates(object p)
+      {
+         var rel = Path.GetRelativePath(Page.AllData[^1].PlateFile, RootDirectory);
+         if (Page.AllData.Count > 0 && rel != "..")
+         {
+            GetRootFiles(true);
+         }
+         else
+         {
+            MessageBox.Show($"Folder was already opened in this file, {rel}", "");
+         }
+      }
+
+      private void SaveBookmark(object p)
+      {
+         try
+         {
+            SaveJsonPlates(p);
+            JsonReader.SaveJsonFile(
+               _bookmarkFilePath,
+               new Bookmark(CurrentPlateIndex, Page.PageNumber, RootDirectory, SaveFile),
+               true,
+               true
+               );
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show(e.Message, "Bookmark Save Error");
+         }
+      }
+
+      /// <summary>
+      /// Broken. Just returns null values.
+      /// </summary>
+      private void OpenBookmark(object p)
+      {
+         try
+         {
+            var bookmark = JsonReader.OpenJsonFile<Bookmark>(_bookmarkFilePath);
+            RootDirectory = bookmark.CurrentSourceFolder;
+            SaveFile = bookmark.CurrentSaveFile;
+            GetRootFiles();
+
+            if (Page.AllData.Count > 0)
+            {
+               CurrentPlate = Page.AllData[bookmark.CurrentPlateIndex];
+            }
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show(e.Message, "Bookmark Open Error");
+         }
+      }
+
+      private void ArrDepParse(object p)
+      {
+         var arrDepName = "";
+         var arrDepOther = "";
+         var name = CurrentPlate.ApproachType;
+         if (name.Contains('_'))
+         {
+            var nameSplit = name.Split('_');
+            arrDepName = nameSplit[0];
+            arrDepOther = $"-{nameSplit[1]}";
+         }
+         else
+         {
+            arrDepName = name;
+         }
+         CurrentPlate.ApproachType = "RNAV";
+         CurrentPlate.Name = arrDepName;
+         CurrentPlate.Other = arrDepOther;
+      }
+      #endregion
+
+      #region Helper Methods
+      /// <summary>
+      /// Checks for null or empty strings and replaces.
+      /// </summary>
       public void CheckValues()
       {
          if (CurrentPlate != null)
@@ -88,6 +259,10 @@ namespace PlateEditorWPF
             if (String.IsNullOrEmpty(CurrentPlate.IATACode))
             {
                CurrentPlate.IATACode = _null;
+            }
+            if (String.IsNullOrEmpty(CurrentPlate.Name))
+            {
+               CurrentPlate.Name = _null;
             }
             if (String.IsNullOrEmpty(CurrentPlate.Runway))
             {
@@ -101,9 +276,57 @@ namespace PlateEditorWPF
             {
                CurrentPlate.Other = _null;
             }
+            if (String.IsNullOrEmpty(CurrentPlate.ApproachType))
+            {
+               CurrentPlate.ApproachType = _null;
+            }
          }
       }
 
+      private void ApproachTypeSelected(string value)
+      {
+         if (CurrentPlate != null)
+         {
+            CurrentPlate.GetApproachType(value);
+         }
+      }
+
+      private void GetRootFiles(bool append = false)
+      {
+         try
+         {
+            if (append)
+            {
+               Page.Append(
+                  PlateMetaData.BuildMetaData(
+                     Directory.GetFiles(RootDirectory)
+                     )
+                  );
+            }
+            else
+            {
+               Page = new Page<PlateMetaData>(
+                  50,
+                  PlateMetaData.BuildMetaData(
+                     Directory.GetFiles(RootDirectory)
+                     )
+                  );
+            }
+
+            if (Page.AllData.Count > 0)
+            {
+               Page.SelectPage(0);
+               CurrentPlate = Page.PageData[0];
+            }
+         }
+         catch (Exception e)
+         {
+            MessageBox.Show($"{e.Message} - Unable to select file.", "Error!");
+         }
+      }
+      #endregion
+
+      #region Event Handlers
       public void ApproachTypeSelectionEvent(object sender, SelectionChangedEventArgs e)
       {
          if (CurrentPlate != null && e.AddedItems.Count == 1)
@@ -126,163 +349,36 @@ namespace PlateEditorWPF
          }
       }
 
-      private void ApproachTypeSelected(string value)
+      public void AllApproachTypesSelection(object sender, SelectionChangedEventArgs e)
       {
-         if (CurrentPlate != null)
+         if (e.AddedItems.Count == 1 && e.AddedItems[0] is string newAp)
          {
-            CurrentPlate.GetApproachType(value);
+            CurrentPlate.ApproachType = newAp;
          }
+         e.Handled = true;
       }
 
-      private void OpenRootDir(object p)
+      public void PageSizeSliderChangeEvent(object sender, RoutedPropertyChangedEventArgs<double> e)
       {
-         if (RootDirExists)
-         {
-            GetRootFiles();
-         }
-      }
-
-      private void GetRootFiles()
-      {
-         try
-         {
-            //AllPlates = new ObservableCollection<PlateMetaData>(
-            //   PlateMetaData.BuildMetaData(
-            //      Directory.GetFiles(RootDirectory)
-            //   )
-            //);
-            Page = new Page<PlateMetaData>(
-               50,
-               PlateMetaData.BuildMetaData(
-                  Directory.GetFiles(RootDirectory)
-               )
-            );
-            CurrentPlate = Page.PageData[0];
-
-            //if (AllPlates.Count > 0)
-            //{
-            //   CurrentPlate = AllPlates[0];
-            //}
-         }
-         catch (Exception e)
-         {
-            MessageBox.Show($"{e.Message} - Unable to select file.", "Error!");
-         }
-      }
-
-      //private void NextImage(object p)
-      //{
-      //   if (AllPlates != null)
-      //   {
-      //      if (CurrentPlateIndex + 1 >= AllPlates.Count)
-      //      {
-      //         CurrentPlate = AllPlates[0];
-      //      }
-      //      else
-      //      {
-      //         CurrentPlate = AllPlates[CurrentPlateIndex + 1];
-      //      }
-      //   }
-      //}
-
-      //private void PrevImage(object p)
-      //{
-      //   if (AllPlates != null)
-      //   {
-      //      if (CurrentPlateIndex - 1 < 0)
-      //      {
-      //         CurrentPlate = AllPlates[^1];
-      //      }
-      //      else
-      //      {
-      //         CurrentPlate = AllPlates[CurrentPlateIndex - 1];
-      //      }
-      //   }
-      //}
-
-      private void PrevPlate(object p)
-      {
-         if (Page is null) return;
-
-         if (CurrentPlateIndex - 1 < 0)
-         {
-            CurrentPlate = Page.PageData[^1];
-         }
-         else
-         {
-            CurrentPlate = Page.PageData[CurrentPlateIndex - 1];
-         }
-      }
-
-      private void NextPlate(object p)
-      {
-         if (Page is null) return;
-
-         if (CurrentPlateIndex + 1 >= AllPlates.Count)
-         {
-            CurrentPlate = Page.PageData[0];
-         }
-         else
-         {
-            CurrentPlate = Page.PageData[CurrentPlateIndex + 1];
-         }
-      }
-
-      private void PrevPage(object p)
-      {
-         if (Page is null) return;
-         Page.PageNumber--;
          CurrentPlate = Page.PageData[0];
+         e.Handled = true;
       }
 
-      private void NextPage(object p)
+      public void GetAllApproachTypes(object sender, EventArgs e)
       {
          if (Page is null) return;
-            Page.PageNumber++;
-            CurrentPlate = Page.PageData[0];
-      }
 
-      //private void SavePlates(object p)
-      //{
-      //   var savedFiles = new List<SavedFile>();
-      //   var errOccured = false;
-      //   if (ToggleOverwrite)
-      //   {
-      //      var delResult = Parallel.ForEach(Directory.GetFiles(SaveDirectory), (filePath) =>
-      //      {
-      //         File.Delete(filePath);
-      //      });
-      //   }
-
-      //   var result = Parallel.ForEach(AllPlates, (plate) =>
-      //   {
-      //         try
-      //         {
-      //            plate.Save(SaveDirectory);
-      //            savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, null));
-      //         }
-      //         catch (Exception e)
-      //         {
-      //            errOccured = true;
-      //            savedFiles.Add(new SavedFile(plate.ToString(), plate.PlateFile, e));
-      //         }
-      //   });
-
-      //   var newSaveCmpDialog = new SaveCompletedDialog(errOccured ? "Save Completed, some errors occured." : "Save Completed.", RootDirectory, SaveDirectory, savedFiles);
-      //   newSaveCmpDialog.ShowDialog();
-      //}
-
-      public void SaveJsonPlates(object p)
-      {
-         try
+         var apTypes = new List<string>();
+         foreach (var plate in Page.AllData)
          {
-            JsonReader.SaveJsonFile(SaveDirectory, AllPlates, true, true);
+            if (!apTypes.Contains(plate.ApproachType))
+            {
+               apTypes.Add(plate.ApproachType);
+            }
          }
-         catch (Exception e)
-         {
-            MessageBox.Show(e.Message);
-         }
+         AllApproachTypes = new ObservableCollection<string>(apTypes);
       }
+      #endregion
 
       private void Update()
       {
@@ -292,83 +388,6 @@ namespace PlateEditorWPF
          }
       }
 
-      public void ToggleSaveAllEvent(object sender, RoutedEventArgs e)
-      {
-         foreach (var plate in AllPlates)
-         {
-            plate.WillSavePlate = ToggleSaveAll;
-         }
-      }
-
-      private void SaveBookmark(object p)
-      {
-         StringBuilder bookmarkFileBuilder = new StringBuilder();
-         bookmarkFileBuilder.AppendLine(RootDirectory);
-         bookmarkFileBuilder.AppendLine(SaveDirectory);
-         bookmarkFileBuilder.AppendLine(CurrentPlate.PlateFile);
-
-         try
-         {
-            File.WriteAllText(_bookmarkFilePath, bookmarkFileBuilder.ToString());
-         }
-         catch (Exception e)
-         {
-            MessageBox.Show(e.Message, "Bookmark Save Error");
-         }
-      }
-
-      private void OpenBookmark(object p)
-      {
-         try
-         {
-            string[] lines = File.ReadAllLines(_bookmarkFilePath);
-            if (lines.Length == 3)
-            {
-               RootDirectory = lines[0];
-               SaveDirectory = lines[1];
-               string bookmarkFilePath = lines[2];
-
-               if (RootDirExists)
-               {
-                  GetRootFiles();
-               }
-
-               if (AllPlates.Count > 0)
-               {
-                  CurrentPlate = AllPlates.First(plate => plate.PlateFile == bookmarkFilePath);
-               }
-            }
-            else
-            {
-               MessageBox.Show("Bookmark file is corrupted.", "Bookmark Open Error");
-            }
-         }
-         catch (Exception e)
-         {
-            MessageBox.Show(e.Message, "Bookmark Open Error");
-         }
-      }
-
-      public void GetAllApproachTypes(object sender, EventArgs e)
-      {
-         var apTypes = new List<string>();
-         foreach (var plate in AllPlates)
-         {
-            if (!apTypes.Contains(plate.ApproachType))
-            {
-               apTypes.Add(plate.ApproachType);
-            }
-         }
-         AllApproachTypes = new ObservableCollection<string>(apTypes);
-      }
-
-      public void AllApproachTypesSelection(object sender, SelectionChangedEventArgs e)
-      {
-         if (e.AddedItems.Count == 1 && e.AddedItems[0] is string newAp)
-         {
-            CurrentPlate.ApproachType = newAp;
-         }
-      }
       #endregion
 
       #region - Full Properties
@@ -379,7 +398,7 @@ namespace PlateEditorWPF
          {
             _page = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(AllPlates));
+            OnPropertyChanged(nameof(PlateCount));
          }
       }
 
@@ -402,22 +421,22 @@ namespace PlateEditorWPF
          }
       }
 
-      public string SaveDirectory
+      public string SaveFile
       {
-         get { return _saveDir; }
+         get { return _saveFile; }
          set
          {
-            _saveDir = value;
+            _saveFile = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(SaveDirExists));
+            OnPropertyChanged(nameof(SaveFileExists));
          }
       }
 
-      public bool SaveDirExists
+      public bool SaveFileExists
       {
          get
          {
-            return Directory.Exists(SaveDirectory);
+            return File.Exists(SaveFile);
          }
       }
 
@@ -449,7 +468,6 @@ namespace PlateEditorWPF
       {
          get
          {
-            //return AllPlates.IndexOf(CurrentPlate);
             if (Page is null) return 0;
             return Page.PageData.IndexOf(CurrentPlate);
          }
@@ -465,26 +483,6 @@ namespace PlateEditorWPF
          }
       }
 
-      public bool ToggleSaveAll
-      {
-         get { return _toggleSaveAll; }
-         set
-         {
-            _toggleSaveAll = value;
-            OnPropertyChanged();
-         }
-      }
-
-      public bool ToggleOverwrite
-      {
-         get { return _toggleOverwrite; }
-         set
-         {
-            _toggleOverwrite = value;
-            OnPropertyChanged();
-         }
-      }
-
       public ObservableCollection<string> AllApproachTypes
       {
          get
@@ -494,6 +492,25 @@ namespace PlateEditorWPF
          set
          {
             _allApproachTypes = value;
+            OnPropertyChanged();
+         }
+      }
+
+      public int PlateCount
+      {
+         get
+         {
+            if (Page is null) return 0;
+            return Page.AllData.Count;
+         }
+      }
+
+      public bool ToggleOverwrite
+      {
+         get { return _toggleOverwrite; }
+         set
+         {
+            _toggleOverwrite = value;
             OnPropertyChanged();
          }
       }

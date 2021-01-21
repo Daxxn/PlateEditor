@@ -70,11 +70,15 @@ namespace PlateEditorWPF.Models
       private string _other;
 
       private string _plateFile;
-      private bool _savePlate;
+
+      private bool _hasChanged;
       #endregion
 
       #region - Constructors
-      public PlateMetaData() { }
+      public PlateMetaData()
+      {
+         _hasChanged = false;
+      }
       #endregion
 
       #region - Methods
@@ -150,15 +154,6 @@ namespace PlateEditorWPF.Models
          return output;
       }
 
-      //public void Save(string saveDir)
-      //{
-      //   File.Copy(
-      //      PlateFile,
-      //      Path.Combine(saveDir, FileName),
-      //      true
-      //   );
-      //}
-
       public string GetApproachTypeKey(string apType)
       {
          if (ApproachTypes.ContainsValue(apType))
@@ -189,10 +184,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _IATACode = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -203,10 +196,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _type = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -217,10 +208,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _regionCode = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -231,10 +220,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _approachType = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -245,6 +232,7 @@ namespace PlateEditorWPF.Models
          set
          {
             _name = value;
+            HasChanged = true;
             OnPropertyChanged();
          }
       }
@@ -255,10 +243,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _runway = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -269,10 +255,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _approachOption = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -283,10 +267,8 @@ namespace PlateEditorWPF.Models
          set
          {
             _other = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
@@ -297,22 +279,11 @@ namespace PlateEditorWPF.Models
          set
          {
             _plateFile = value;
+            HasChanged = true;
             OnPropertyChanged();
-            //OnPropertyChanged(nameof(FileName));
-            //OnPropertyChanged(nameof(WillSavePlate));
-            OnPropertyChanged(nameof(IsNameChanged));
             OnPropertyChanged(nameof(FullName));
          }
       }
-
-      //public string FileName
-      //{
-      //   get
-      //   {
-      //      return $"{ToString()}.png";
-      //   }
-      //}
-
 
       public string FullName
       {
@@ -322,25 +293,12 @@ namespace PlateEditorWPF.Models
          }
       }
 
-      public bool IsNameChanged
+      public bool HasChanged
       {
-         get
-         {
-            if (PlateFile is null)
-            {
-               return false;
-            }
-            return Path.GetFileNameWithoutExtension(PlateFile) != ToString();
-         }
-      }
-
-
-      public bool WillSavePlate
-      {
-         get { return _savePlate; }
+         get { return _hasChanged; }
          set
          {
-            _savePlate = value;
+            _hasChanged = value;
             OnPropertyChanged();
          }
       }

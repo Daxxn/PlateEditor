@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace PlateEditorWPF.Models
 {
@@ -14,7 +13,6 @@ namespace PlateEditorWPF.Models
    public class Page<T> : Model
    {
       #region - Fields & Properties
-      private List<string> _allFiles;
       private List<T> _allData;
       private ObservableCollection<T> _pageData;
       private int _pageSize;
@@ -24,17 +22,34 @@ namespace PlateEditorWPF.Models
       #endregion
 
       #region - Constructors
+      /// <summary>
+      /// Initializes a new instance of a <see cref="Page{T}"/>, sets the data to be used.
+      /// </summary>
+      /// <param name="pageSize">The number of items stored in a page.</param>
+      /// <param name="data">All the data the pages will use.</param>
       public Page(int pageSize, IEnumerable<T> data)
       {
          AllData = data.ToList();
          PageSize = pageSize;
          PageStart = 0;
          PageNumber = 0;
-         //PageEnd = pageSize;
       }
       #endregion
 
       #region - Methods
+      /// <summary>
+      /// Appends new data to old.
+      /// </summary>
+      /// <param name="newData">The new data.</param>
+      public void Append(IEnumerable<T> newData)
+      {
+         if (newData.Count() > 0)
+         {
+            AllData.AddRange(newData);
+            SelectPage(0);
+         }
+      }
+
       /// <summary>
       /// Selects the next page based on the PageNumber property.
       /// <para/>
@@ -91,26 +106,32 @@ namespace PlateEditorWPF.Models
       #endregion
 
       #region - Full Properties
-      public List<string> AllFiles
-      {
-         get { return _allFiles; }
-         set
-         {
-            _allFiles = value;
-            OnPropertyChanged();
-         }
-      }
-
+      /// <summary>
+      /// All the data to display. <para/> this should only be set once, with the constructor.
+      /// </summary>
       public List<T> AllData
       {
          get { return _allData; }
-         set
+         private set
          {
             _allData = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PageCount));
+            OnPropertyChanged(nameof(DataCount));
+            OnPropertyChanged(nameof(PageCountDisp));
+         }
+      }
+      public int DataCount
+      {
+         get
+         {
+            return AllData.Count;
          }
       }
 
+      /// <summary>
+      /// The items this page contains.
+      /// </summary>
       public ObservableCollection<T> PageData
       {
          get { return _pageData; }
@@ -118,19 +139,32 @@ namespace PlateEditorWPF.Models
          {
             _pageData = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PageCount));
+            OnPropertyChanged(nameof(DataCount));
+            OnPropertyChanged(nameof(PageCountDisp));
          }
       }
 
+      /// <summary>
+      /// The number of items stored in a page.
+      /// </summary>
       public int PageSize
       {
          get { return _pageSize; }
          set
          {
             _pageSize = value;
+            SelectPage(0);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PageCount));
+            OnPropertyChanged(nameof(DataCount));
+            OnPropertyChanged(nameof(PageCountDisp));
          }
       }
 
+      /// <summary>
+      /// The starting index of the current page.
+      /// </summary>
       public int PageStart
       {
          get { return _pageStart; }
@@ -141,6 +175,9 @@ namespace PlateEditorWPF.Models
          }
       }
 
+      /// <summary>
+      /// The ending index of the current page.
+      /// </summary>
       public int PageEnd
       {
          get { return _pageEnd; }
@@ -151,11 +188,17 @@ namespace PlateEditorWPF.Models
          }
       }
 
+      /// <summary>
+      /// The number of pages total.
+      /// </summary>
       public int PageCount
       {
          get => (int)Math.Floor((double)AllData.Count / (double)PageSize);
       }
 
+      /// <summary>
+      /// The current page number. <para/> Used to calc the current page indeces.
+      /// </summary>
       public int PageNumber
       {
          get { return _pageNumber; }
@@ -177,13 +220,22 @@ namespace PlateEditorWPF.Models
             OnPropertyChanged();
             OnPropertyChanged(nameof(PageNumberDisp));
             OnPropertyChanged(nameof(PageData));
+            OnPropertyChanged(nameof(DataCount));
+            OnPropertyChanged(nameof(PageCountDisp));
          }
       }
 
+      /// <summary>
+      /// The corrected page number to display.
+      /// </summary>
       public int PageNumberDisp
       {
          get => PageNumber + 1;
-         set => PageNumber = value - 1;
+      }
+
+      public int PageCountDisp
+      {
+         get => PageCount + 1;
       }
       #endregion
    }

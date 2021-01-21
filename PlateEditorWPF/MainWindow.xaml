@@ -13,9 +13,12 @@
         <cnv:VisibilityConverter x:Key="VisibleConverter"/>
     </Window.Resources>
     <Window.InputBindings>
-        <KeyBinding Command="{Binding Path=SavePlatesCmd}" Key="Return"/>
+        <KeyBinding Command="{Binding Path=SavePlatesCmd}" Modifiers="Ctrl" Key="S"/>
         <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Left"/>
         <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Right"/>
+        <KeyBinding Command="{Binding Path=PrevPageCmd}" Key="Up"/>
+        <KeyBinding Command="{Binding Path=NextPageCmd}" Key="Down"/>
+        <KeyBinding Command="{Binding Path=ArrDepParseCmd}" Key="A" Modifiers="Shift+Alt"/>
     </Window.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -30,12 +33,46 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0" Grid.ColumnSpan="5">
-            <MenuItem Header="File">
+        <Menu
+            Grid.Row="0"
+            Grid.ColumnSpan="5"
+            KeyboardNavigation.ControlTabNavigation="None"
+            KeyboardNavigation.TabNavigation="None"
+            IsTabStop="False"
+        >
+            <MenuItem
+                Header="File"
+                KeyboardNavigation.ControlTabNavigation="None"
+                KeyboardNavigation.TabNavigation="None"
+                IsTabStop="False"
+            >
+                <MenuItem
+                    Header="Save"
+                    Command="{Binding Path=SavePlatesJsonCmd}"
+                    KeyboardNavigation.ControlTabNavigation="None"
+                    KeyboardNavigation.TabNavigation="None"
+                    IsTabStop="False"
+                />
+                <MenuItem
+                    Header="Open"
+                    Command="{Binding Path=OpenPlatesJsonCmd}"
+                    KeyboardNavigation.ControlTabNavigation="None"
+                    KeyboardNavigation.TabNavigation="None"
+                    IsTabStop="False"
+                />
+            </MenuItem>
+            <!--Broken...-->
+            <!--<MenuItem Header="Bookmark">
                 <MenuItem Header="Save" Command="{Binding Path=SaveBookmarkCmd}"/>
                 <MenuItem Header="Open" Command="{Binding Path=OpenBookmarkCmd}"/>
-            </MenuItem>
-            <MenuItem Header="Test" Command="{Binding Path=TestCmd}"/>
+            </MenuItem>-->
+            <MenuItem
+                Header="Test"
+                Command="{Binding Path=TestCmd}"
+                KeyboardNavigation.ControlTabNavigation="None"
+                KeyboardNavigation.TabNavigation="None"
+                IsTabStop="False"
+            />
         </Menu>
 
         <Border
@@ -63,16 +100,23 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.ColumnSpan="3">Source Folder</TextBlock>
+                                <TextBlock Grid.ColumnSpan="3">Image Source Folder</TextBlock>
                                 <TextBox
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
                                     Grid.Column="0"
                                     Grid.Row="1"
+                                    TextWrapping="Wrap"
+                                    MaxLines="2"
+                                    Padding="0,0,10,0"
                                     Text="{Binding Path=RootDirectory, UpdateSourceTrigger=PropertyChanged}"
                                 >
                                     <TextBox.Style>
@@ -89,11 +133,25 @@
                                     </TextBox.Style>
                                 </TextBox>
                                 <Button
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
                                     Command="{Binding Path=OpenRootDirCmd}"
                                     Grid.Row="1"
                                     Grid.Column="2"
                                 >
                                     Open
+                                </Button>
+                                <Button
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
+                                    Command="{Binding Path=AppendRootDirCmd}"
+                                    Grid.Row="1"
+                                    Grid.Column="3"
+                                    FontSize="10"
+                                >
+                                    Append
                                 </Button>
                             </Grid>
                         </Border>
@@ -110,19 +168,22 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.ColumnSpan="3">Save Folder</TextBlock>
+                                <TextBlock Grid.ColumnSpan="3">Json Save File</TextBlock>
                                 <TextBox
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
                                     Grid.Column="0"
                                     Grid.Row="1"
-                                    Text="{Binding Path=SaveDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{Binding Path=SaveFile, UpdateSourceTrigger=PropertyChanged}"
                                 >
                                     <TextBox.Style>
                                         <Style TargetType="TextBox">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Path=SaveDirExists, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                <DataTrigger Binding="{Binding Path=SaveFileExists, UpdateSourceTrigger=PropertyChanged}" Value="True">
                                                     <Setter Property="Background" Value="LightGreen"/>
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Path=SaveDirExists, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                                                <DataTrigger Binding="{Binding Path=SaveFileExists, UpdateSourceTrigger=PropertyChanged}" Value="False">
                                                     <Setter Property="Background" Value="LightSalmon"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
@@ -148,6 +209,9 @@
                             Switch Plates
                         </TextBlock>
                         <Button
+                            KeyboardNavigation.ControlTabNavigation="None"
+                            KeyboardNavigation.TabNavigation="None"
+                            IsTabStop="False"
                             Grid.Column="0"
                             Grid.Row="1"
                             Command="{Binding Path=PrevImageCmd}"
@@ -156,6 +220,9 @@
                             Prev
                         </Button>
                         <Button
+                            KeyboardNavigation.ControlTabNavigation="None"
+                            KeyboardNavigation.TabNavigation="None"
+                            IsTabStop="False"
                             Grid.Column="1"
                             Grid.Row="1"
                             Command="{Binding Path=NextImageCmd}"
@@ -170,118 +237,119 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Grid.Column="0" x:Name="ToggleSaveCB" IsChecked="{Binding Path=ToggleSaveAll}">
-                                Save All
-                            </CheckBox>
-                            <CheckBox Grid.Column="1" x:Name="ToggleOverwriteCB" IsChecked="{Binding Path=ToggleOverwrite}">
-                                Overwrite Folder
-                            </CheckBox>
-                        </Grid>
-                        <!--<TextBlock Grid.Row="1">Plate Paths</TextBlock>-->
-                        <!--Original List View - Slow.-->
-                        <!--<ListView
-                                x:Name="allPlatesView"
-                                BorderBrush="Blue"
-                                BorderThickness="2"
-                                Margin="2"
-                                Grid.Row="2"
-                                Grid.ColumnSpan="2"
-                                ItemsSource="{Binding Path=AllPlates, UpdateSourceTrigger=PropertyChanged}"
-                                SelectedItem="{Binding Path=CurrentPlate, UpdateSourceTrigger=PropertyChanged}"
-                            >
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image
-                                                Source="\Images\SaveIconSmall.png"
-                                                Visibility="{
-                                                    Binding Path=IsNameChanged,
-                                                    UpdateSourceTrigger=PropertyChanged,
-                                                    Converter={StaticResource VisibleConverter}
-                                                }"
-                                                Width="20"
-                                                Height="20"
-                                            />
-                                        <TextBlock Text="{Binding Path=FullName}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>-->
-                        
                         <!--Page based list view-->
-                        <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Grid.Column="0" FontSize="14">Plate Paths</TextBlock>
-                            <StackPanel Panel.ZIndex="10" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-                                <StackPanel.RenderTransform>
-                                    <TranslateTransform X="50" Y="{Binding ElementName=allPlatesView, Path=ActualHeight}"/>
-                                </StackPanel.RenderTransform>
-                                <TextBlock Background="AliceBlue" Padding="0,0,4,0">Page #</TextBlock>
-                                <TextBlock Background="AliceBlue" Text="{Binding Path=Page.PageNumberDisp}"/>
-                            </StackPanel>
-                            <ListView
-                                x:Name="allPlatesView"
-                                BorderBrush="Blue"
-                                BorderThickness="2"
-                                Margin="2"
-                                Grid.Row="1"
-                                Grid.ColumnSpan="2"
-                                ItemsSource="{Binding Path=Page.PageData, UpdateSourceTrigger=PropertyChanged}"
-                                SelectedItem="{Binding Path=CurrentPlate, UpdateSourceTrigger=PropertyChanged}"
-                            >
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image
-                                                Source="\Images\SaveIconSmall.png"
-                                                Visibility="{
-                                                    Binding Path=IsNameChanged,
-                                                    UpdateSourceTrigger=PropertyChanged,
-                                                    Converter={StaticResource VisibleConverter}
-                                                }"
-                                                Width="20"
-                                                Height="20"
-                                            />
-                                            <TextBlock Text="{Binding Path=FullName}"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                            <Button Padding="2" Grid.Row="2" Grid.Column="0" Command="{Binding Path=PrevPageCmd}">
-                                Prev
-                            </Button>
-                            <Button Padding="2" Grid.Row="2" Grid.Column="1" Command="{Binding Path=NextPageCmd}">
-                                Next
-                            </Button>
-                        </Grid>
+                        <Border Grid.Row="1" Style="{StaticResource PlateListBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="3">
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontSize="14"
+                                    VerticalAlignment="Center"
+                                >
+                                    Plate Paths
+                                </TextBlock>
+                                <Slider
+                                    x:Name="PageSizeSlider"
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Minimum="20"
+                                    Maximum="200"
+                                    TickFrequency="5"
+                                    IsSnapToTickEnabled="True"
+                                    Value="{Binding Path=Page.PageSize, UpdateSourceTrigger=PropertyChanged}"
+                                    TickPlacement="TopLeft"
+                                    AutoToolTipPlacement="TopLeft"
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
+                                />
+                                <StackPanel Panel.ZIndex="10" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                                    <StackPanel.RenderTransform>
+                                        <TranslateTransform X="20" Y="{Binding ElementName=allPlatesView, Path=ActualHeight}"/>
+                                    </StackPanel.RenderTransform>
+                                    <TextBlock Background="AliceBlue" Padding="0,0,4,0">Page #</TextBlock>
+                                    <TextBlock Background="AliceBlue">
+                                        <Run Text="{Binding Path=Page.PageNumberDisp, Mode=OneWay}"/>
+                                        <Run> / </Run>
+                                        <Run Text="{Binding Path=Page.PageCount, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <ListView
+                                    TabIndex="10"
+                                    x:Name="allPlatesView"
+                                    Margin="2"  
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="AliceBlue"
+                                    ItemsSource="{Binding Path=Page.PageData, UpdateSourceTrigger=PropertyChanged}"
+                                    SelectedItem="{Binding Path=CurrentPlate, UpdateSourceTrigger=PropertyChanged}"
+                                >
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image
+                                                    Source="\Images\PlateIconSml.png"
+                                                    Width="20"
+                                                    Height="20"
+                                                />
+                                                <TextBlock Text="{Binding Path=FullName}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <Button
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
+                                    Padding="2"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Command="{Binding Path=PrevPageCmd}"
+                                >
+                                    Prev
+                                </Button>
+                                <Button
+                                    KeyboardNavigation.ControlTabNavigation="None"
+                                    KeyboardNavigation.TabNavigation="None"
+                                    IsTabStop="False"
+                                    Padding="2"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Command="{Binding Path=NextPageCmd}"
+                                >
+                                    Next
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Padding="0,0,10,0">Plate Count</TextBlock>
-                            <TextBlock Grid.Column="1" Text="{Binding Path=Page.AllData.Count}"/>
+                            <TextBlock Grid.Column="0" Padding="0,0,10,0">
+                                Total Plate Count
+                            </TextBlock>
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{Binding Path=Page.DataCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                            />
                         </Grid>
                     </Grid>
                 </Border>
@@ -289,6 +357,9 @@
         </Border>
 
         <GridSplitter
+            KeyboardNavigation.ControlTabNavigation="None"
+            KeyboardNavigation.TabNavigation="None"
+            IsTabStop="False"
             Grid.Row="1"
             Grid.Column="1"
             ResizeDirection="Columns"
@@ -338,13 +409,20 @@
                     IATA
                 </TextBlock>
                 <TextBox
+                    TabIndex="1"
                     Grid.Column="1"
                     Grid.Row="1"
                     Text="{Binding
                         Path=CurrentPlate.IATACode,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
+                    GotFocus="TextBox_GotFocus"
+                >
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
                 <TextBlock
                     Grid.Column="0"
@@ -353,6 +431,7 @@
                     Region
                 </TextBlock>
                 <ComboBox
+                    TabIndex="2"
                     x:Name="plateRegionComb"
                     Grid.Column="1"
                     Grid.Row="2"
@@ -360,7 +439,12 @@
                         Path=CurrentPlate.RegionCode,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
+                >
+                    <ComboBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </ComboBox.InputBindings>
+                </ComboBox>
 
                 <TextBlock
                     Grid.Column="0"
@@ -379,6 +463,7 @@
                     Plate Type
                 </TextBlock>
                 <ComboBox
+                    TabIndex="3"
                     x:Name="plateTypeComb"
                     Grid.Column="1"
                     Grid.Row="4"
@@ -386,10 +471,29 @@
                         Path=CurrentPlate.Type,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
+                >
+                    <ComboBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </ComboBox.InputBindings>
+                </ComboBox>
 
                 <TextBlock Grid.Row="5" Grid.Column="0">Name</TextBlock>
-                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Path=CurrentPlate.Name}"/>
+                <TextBox
+                    TabIndex="4"
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Text="{Binding
+                        Path=CurrentPlate.Name,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                    GotFocus="TextBox_GotFocus"
+                >
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
                 <TextBlock
                     Grid.Column="0"
@@ -398,9 +502,14 @@
                     Approach Type
                 </TextBlock>
                 <TextBox
+                    TabIndex="5"
                     Grid.Column="1"
                     Grid.Row="6"
-                    Text="{Binding Path=CurrentPlate.ApproachType, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding
+                        Path=CurrentPlate.ApproachType,
+                        UpdateSourceTrigger=PropertyChanged
+                    }"
+                    GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.ContextMenu>
                         <ContextMenu Name="CurrentPlateApproachTypeCM">
@@ -421,6 +530,10 @@
                             </MenuItem>
                         </ContextMenu>
                     </TextBox.ContextMenu>
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
                 </TextBox>
 
                 <TextBlock
@@ -440,13 +553,20 @@
                     Runway
                 </TextBlock>
                 <TextBox
+                    TabIndex="6"
                     Grid.Column="1"
                     Grid.Row="8"
                     Text="{Binding
                         Path=CurrentPlate.Runway,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
+                    GotFocus="TextBox_GotFocus"
+                >
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
                 <TextBlock
                     Grid.Column="0"
@@ -455,13 +575,20 @@
                     Appr Option
                 </TextBlock>
                 <TextBox
+                    TabIndex="7"
                     Grid.Column="1"
                     Grid.Row="9"
                     Text="{Binding
                         Path=CurrentPlate.ApproachOption,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
+                    GotFocus="TextBox_GotFocus"
+                >
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
                 <TextBlock
                     Grid.Column="0"
@@ -470,38 +597,51 @@
                     Other
                 </TextBlock>
                 <TextBox
+                    TabIndex="8"
                     Grid.Column="1"
                     Grid.Row="10"
                     Text="{Binding
                         Path=CurrentPlate.Other,
                         UpdateSourceTrigger=PropertyChanged
                     }"
-                />
-                <CheckBox IsChecked="{Binding Path=LockedIn, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2" Grid.Row="11">
-                    Locked
-                </CheckBox>
+                    GotFocus="TextBox_GotFocus"
+                >
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
-                <StackPanel Grid.ColumnSpan="2" Grid.Row="13">
-                    <Button
-                        Grid.ColumnSpan="2"
-                        Grid.Row="12"
-                        Command="{Binding Path=SavePlatesCmd}"
-                    >
-                        Save Plates
-                    </Button>
-                    <Button Command="{Binding Path=SavePlatesJsonCmd}">
-                        Save Json Plates
-                    </Button>
+                <StackPanel Grid.ColumnSpan="2" Grid.Row="11">
+                    <Button TabIndex="9" Command="{Binding Path=ArrDepParseCmd}">Arrival/Departure</Button>
                 </StackPanel>
+                
+                <Button
+                    KeyboardNavigation.ControlTabNavigation="None"
+                    KeyboardNavigation.TabNavigation="None"
+                    IsTabStop="False"
+                    Grid.ColumnSpan="2"
+                    Grid.Row="13"
+                    Command="{Binding Path=SavePlatesJsonCmd}"
+                >
+                    Save Json Plates
+                </Button>
             </Grid>
         </Border>
 
         <GridSplitter
+            KeyboardNavigation.ControlTabNavigation="None"
+            KeyboardNavigation.TabNavigation="None"
+            IsTabStop="False"
             Grid.Row="1"
             Grid.Column="3"
         />
 
-        <Border Grid.Row="1" Grid.Column="4" Style="{StaticResource ImageBorder}">
+        <Border
+            Grid.Row="1"
+            Grid.Column="4"
+            Style="{StaticResource ImageBorder}"
+        >
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -510,6 +650,9 @@
 
                 <StackPanel Orientation="Horizontal">
                     <Button
+                        KeyboardNavigation.ControlTabNavigation="None"
+                        KeyboardNavigation.TabNavigation="None"
+                        IsTabStop="False"
                         Padding="5,2,5,2"
                         Click="RotateButtons_Click"
                         DataContext="Horz"
@@ -517,6 +660,9 @@
                         Horz
                     </Button>
                     <Button
+                        KeyboardNavigation.ControlTabNavigation="None"
+                        KeyboardNavigation.TabNavigation="None"
+                        IsTabStop="False"
                         Padding="5,2,5,2"
                         Click="RotateButtons_Click"
                         DataContext="Vert"

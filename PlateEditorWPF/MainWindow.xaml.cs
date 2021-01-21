@@ -23,21 +23,20 @@ namespace PlateEditorWPF
    public partial class MainWindow : Window
    {
       public RotateTransform ImageRotation { get; set; }
-      private MainViewModel _VM { get; set; }
       public MainWindow()
       {
          ImageRotation = new RotateTransform(0);
          var VM = new MainViewModel();
          DataContext = VM;
-         _VM = VM;
          InitializeComponent();
          plateTypeComb.ItemsSource = Enum.GetValues(typeof(PlateType));
          plateRegionComb.ItemsSource = PlateMetaData.AllRegions;
 
-         ToggleSaveCB.Click += VM.ToggleSaveAllEvent;
          allPlatesView.SelectionChanged += VM.AllPlatesViewSelectEvent;
          CurrentPlateApproachTypeCM.Opened += VM.GetAllApproachTypes;
          AllApproachTypesView.SelectionChanged += VM.AllApproachTypesSelection;
+
+         PageSizeSlider.ValueChanged += VM.PageSizeSliderChangeEvent;
 
          VM.UpdateImage += VM_UpdateImage;
       }
@@ -77,6 +76,14 @@ namespace PlateEditorWPF
             } 
          }
          currentImageElement.RenderTransform = ImageRotation;
+      }
+
+      private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+      {
+         if (sender is TextBox box)
+         {
+            box.SelectAll();
+         }
       }
    }
 }
