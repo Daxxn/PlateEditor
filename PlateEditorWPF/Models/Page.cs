@@ -231,6 +231,11 @@ namespace PlateEditorWPF.Models
       public int PageNumberDisp
       {
          get => PageNumber + 1;
+         set
+         {
+            PageNumber = value - 1;
+            //OnPropertyChanged(nameof(PageNumber));
+         }
       }
 
       public int PageCountDisp

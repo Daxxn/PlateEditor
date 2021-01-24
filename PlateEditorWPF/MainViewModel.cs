@@ -29,7 +29,6 @@ namespace PlateEditorWPF
       private string _saveFile = @"B:\Games\OtherGames\FS 2020\Airport Plates\AllPlates.json";
       private string _bookmarkFilePath = $"{Directory.GetCurrentDirectory()}\\Bookmark.json";
 
-      private ObservableCollection<PlateMetaData> _allPlates;
       private PlateMetaData _currentPlate;
 
       private Dictionary<string, string> _approachTypes;
@@ -47,6 +46,9 @@ namespace PlateEditorWPF
       public Command PrevPageCmd { get; private set; }
       public Command NextPageCmd { get; private set; }
       public Command ArrDepParseCmd { get; private set; }
+      public Command ArrOtherRenameCmd { get; private set; }
+      public Command PageArrOtherRenameCmd { get; private set; }
+      public Command ClearPlatesCmd { get; private set; }
 
       public Command TestCmd { get; private set; }
       #endregion
@@ -72,6 +74,10 @@ namespace PlateEditorWPF
          NextPageCmd = new Command(NextPage);
 
          ArrDepParseCmd = new Command(ArrDepParse);
+         ArrOtherRenameCmd = new Command(ArrOtherRename);
+         PageArrOtherRenameCmd = new Command(PageArrOtherRename);
+
+         ClearPlatesCmd = new Command(ClearPlates);
 
          TestCmd = new Command(Test);
 
@@ -147,7 +153,7 @@ namespace PlateEditorWPF
       {
          try
          {
-            Page = new Page<PlateMetaData>((Page is null ? 50 : Page.PageSize), JsonReader.OpenJsonFile<List<PlateMetaData>>(SaveFile));
+            Page = new Page<PlateMetaData>((Page is null ? 28 : Page.PageSize), JsonReader.OpenJsonFile<List<PlateMetaData>>(SaveFile));
             if (Page.AllData.Count > 0)
             {
                CurrentPlate = Page.PageData[0];
@@ -171,6 +177,13 @@ namespace PlateEditorWPF
          {
             MessageBox.Show(e.Message);
          }
+      }
+
+      private void ClearPlates(object p)
+      {
+         Page = null;
+         CurrentPlate = null;
+         Update();
       }
 
       private void AppendPlates(object p)
@@ -245,6 +258,37 @@ namespace PlateEditorWPF
          CurrentPlate.ApproachType = "RNAV";
          CurrentPlate.Name = arrDepName;
          CurrentPlate.Other = arrDepOther;
+      }
+
+      private void ArrOtherRename(object p)
+      {
+         var selectedIndex = Page.AllData.IndexOf(CurrentPlate);
+         for (int i = 0; i <= selectedIndex; i++)
+         {
+            if (Page.AllData[i].Type == PlateType.ArrivalDeparture)
+            {
+               var other = Page.AllData[i].Other;
+               if (other.Contains("-C"))
+               {
+                  Page.AllData[i].Other = other.Replace("C", "NAR");
+               }
+            }
+         }
+      }
+
+      private void PageArrOtherRename(object p)
+      {
+         for (int i = Page.PageStart; i <= Page.PageEnd; i++)
+         {
+            if (Page.AllData[i].Type == PlateType.ArrivalDeparture)
+            {
+               var other = Page.AllData[i].Other;
+               if (other.Contains("-C"))
+               {
+                  Page.AllData[i].Other = other.Replace("C", "NAR");
+               }
+            }
+         }
       }
       #endregion
 
@@ -360,7 +404,10 @@ namespace PlateEditorWPF
 
       public void PageSizeSliderChangeEvent(object sender, RoutedPropertyChangedEventArgs<double> e)
       {
-         CurrentPlate = Page.PageData[0];
+         if (Page != null)
+         {
+            CurrentPlate = Page.PageData[0];
+         }
          e.Handled = true;
       }
 
@@ -385,6 +432,10 @@ namespace PlateEditorWPF
          if (CurrentPlate != null)
          {
             UpdateImage?.Invoke(this, new UpdateImageEventArgs(new Uri(CurrentPlate.PlateFile)));
+         }
+         else
+         {
+            UpdateImage?.Invoke(this, new UpdateImageEventArgs(true));
          }
       }
 
@@ -440,16 +491,6 @@ namespace PlateEditorWPF
          }
       }
 
-      public ObservableCollection<PlateMetaData> AllPlates
-      {
-         get { return _allPlates; }
-         set
-         {
-            _allPlates = value;
-            OnPropertyChanged();
-         }
-      }
-
       public PlateMetaData CurrentPlate
       {
          get { return _currentPlate; }
@@ -458,7 +499,6 @@ namespace PlateEditorWPF
             CheckValues();
             _currentPlate = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(AllPlates));
             OnPropertyChanged(nameof(CurrentPlateIndex));
             Update();
          }

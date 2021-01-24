@@ -11,14 +11,15 @@
         Title="Plate Editor" Height="450" Width="800">
     <Window.Resources>
         <cnv:VisibilityConverter x:Key="VisibleConverter"/>
+        <cnv:TextCapsConverter x:Key="CapsConverter"/>
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Command="{Binding Path=SavePlatesCmd}" Modifiers="Ctrl" Key="S"/>
-        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Left"/>
+        <!--<KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Left"/>
         <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Right"/>
         <KeyBinding Command="{Binding Path=PrevPageCmd}" Key="Up"/>
-        <KeyBinding Command="{Binding Path=NextPageCmd}" Key="Down"/>
-        <KeyBinding Command="{Binding Path=ArrDepParseCmd}" Key="A" Modifiers="Shift+Alt"/>
+        <KeyBinding Command="{Binding Path=NextPageCmd}" Key="Down"/>-->
+        <KeyBinding Command="{Binding Path=ArrDepParseCmd}" Key="Space" Modifiers="Ctrl"/>
     </Window.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -66,6 +67,13 @@
                 <MenuItem Header="Save" Command="{Binding Path=SaveBookmarkCmd}"/>
                 <MenuItem Header="Open" Command="{Binding Path=OpenBookmarkCmd}"/>
             </MenuItem>-->
+            <MenuItem
+                    Header="Clear"
+                    Command="{Binding Path=ClearPlatesCmd}"
+                    KeyboardNavigation.ControlTabNavigation="None"
+                    KeyboardNavigation.TabNavigation="None"
+                    IsTabStop="False"
+                />
             <MenuItem
                 Header="Test"
                 Command="{Binding Path=TestCmd}"
@@ -252,6 +260,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
                                 <TextBlock
@@ -269,7 +278,7 @@
                                     Orientation="Horizontal"
                                     Minimum="20"
                                     Maximum="200"
-                                    TickFrequency="5"
+                                    TickFrequency="2"
                                     IsSnapToTickEnabled="True"
                                     Value="{Binding Path=Page.PageSize, UpdateSourceTrigger=PropertyChanged}"
                                     TickPlacement="TopLeft"
@@ -278,17 +287,6 @@
                                     KeyboardNavigation.TabNavigation="None"
                                     IsTabStop="False"
                                 />
-                                <StackPanel Panel.ZIndex="10" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-                                    <StackPanel.RenderTransform>
-                                        <TranslateTransform X="20" Y="{Binding ElementName=allPlatesView, Path=ActualHeight}"/>
-                                    </StackPanel.RenderTransform>
-                                    <TextBlock Background="AliceBlue" Padding="0,0,4,0">Page #</TextBlock>
-                                    <TextBlock Background="AliceBlue">
-                                        <Run Text="{Binding Path=Page.PageNumberDisp, Mode=OneWay}"/>
-                                        <Run> / </Run>
-                                        <Run Text="{Binding Path=Page.PageCount, Mode=OneWay}"/>
-                                    </TextBlock>
-                                </StackPanel>
                                 <ListView
                                     TabIndex="10"
                                     x:Name="allPlatesView"
@@ -334,6 +332,20 @@
                                 >
                                     Next
                                 </Button>
+
+                                <Grid Grid.Row="3" Grid.ColumnSpan="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock>
+                                        Go to page
+                                    </TextBlock>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=Page.PageNumberDisp}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Path=Page.PageCountDisp, StringFormat=/ {0}}"/>
+                                </Grid>
                             </Grid>
                         </Border>
 
@@ -414,13 +426,16 @@
                     Grid.Row="1"
                     Text="{Binding
                         Path=CurrentPlate.IATACode,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
@@ -441,8 +456,10 @@
                     }"
                 >
                     <ComboBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </ComboBox.InputBindings>
                 </ComboBox>
 
@@ -473,8 +490,10 @@
                     }"
                 >
                     <ComboBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </ComboBox.InputBindings>
                 </ComboBox>
 
@@ -485,13 +504,16 @@
                     Grid.Column="1"
                     Text="{Binding
                         Path=CurrentPlate.Name,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
@@ -507,7 +529,8 @@
                     Grid.Row="6"
                     Text="{Binding
                         Path=CurrentPlate.ApproachType,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
@@ -531,8 +554,10 @@
                         </ContextMenu>
                     </TextBox.ContextMenu>
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
@@ -558,13 +583,16 @@
                     Grid.Row="8"
                     Text="{Binding
                         Path=CurrentPlate.Runway,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
@@ -580,13 +608,16 @@
                     Grid.Row="9"
                     Text="{Binding
                         Path=CurrentPlate.ApproachOption,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
@@ -602,18 +633,38 @@
                     Grid.Row="10"
                     Text="{Binding
                         Path=CurrentPlate.Other,
-                        UpdateSourceTrigger=PropertyChanged
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource CapsConverter}
                     }"
                     GotFocus="TextBox_GotFocus"
                 >
                     <TextBox.InputBindings>
-                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Shift"/>
-                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Shift"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="NumPad2" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="NumPad8" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=NextImageCmd}" Key="Down" Modifiers="Ctrl"/>
+                        <KeyBinding Command="{Binding Path=PrevImageCmd}" Key="Up" Modifiers="Ctrl"/>
                     </TextBox.InputBindings>
                 </TextBox>
 
                 <StackPanel Grid.ColumnSpan="2" Grid.Row="11">
-                    <Button TabIndex="9" Command="{Binding Path=ArrDepParseCmd}">Arrival/Departure</Button>
+                    <Button
+                        TabIndex="9"
+                        Command="{Binding Path=ArrDepParseCmd}"
+                    >
+                        Arr/Dep Restructure
+                    </Button>
+                    <Button
+                        TabIndex="12"
+                        Command="{Binding Path=ArrOtherRenameCmd}"
+                    >
+                        Arrival Nar Rename
+                    </Button>
+                    <Button
+                        TabIndex="13"
+                        Command="{Binding Path=PageArrOtherRenameCmd}"
+                    >
+                        Page Arrival Nar Rename
+                    </Button>
                 </StackPanel>
                 
                 <Button
